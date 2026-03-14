@@ -7,7 +7,7 @@
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="https://dddddzc.github.io/img/profile.jpg">
 <meta property="article:published_time" content="2026-03-14T07:50:36.000Z">
-<meta property="article:modified_time" content="2026-03-14T08:32:18.341Z">
+<meta property="article:modified_time" content="2026-03-14T08:35:50.123Z">
 <meta property="article:author" content="dddddzc">
 <meta property="article:tag" content="github copilot">
 <meta property="article:tag" content="matlab">
@@ -20,7 +20,7 @@
   "url": "https://dddddzc.github.io/2026/03/14/Vscode-Github-Copilot%E6%8E%A5%E5%85%A5MATLAB/",
   "image": "https://dddddzc.github.io/img/profile.jpg",
   "datePublished": "2026-03-14T07:50:36.000Z",
-  "dateModified": "2026-03-14T08:32:18.341Z",
+  "dateModified": "2026-03-14T08:35:50.123Z",
   "author": [
     {
       "@type": "Person",
@@ -161,7 +161,7 @@
   isHighlightShrink: false,
   isToc: true,
   pageType: 'post'
-}</script><meta name="generator" content="Hexo 8.1.1"></head><body><div class="post" id="body-wrap"><header class="post-bg" id="page-header"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">dddddzc's blog</span></a><a class="nav-page-title" href="/"><span class="site-name">Vscode + Github Copilot接入MATLAB</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  返回首页</span></span></a></span><div id="menus"></div></nav><div id="post-info"><h1 class="post-title">Vscode + Github Copilot接入MATLAB</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-03-14T07:50:36.000Z" title="发表于 2026-03-14 15:50:36">2026-03-14</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-03-14T08:32:18.341Z" title="更新于 2026-03-14 16:32:18">2026-03-14</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E7%BC%96%E7%A8%8B%E5%B7%A5%E5%85%B7/">编程工具</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>matlab 的编辑器虽然功能齐全，但在代码补全和智能提示方面完全不如现代编辑器例如 vscode（可以接入 AI 插件提效）。本文将介绍如何使用 vscode + github copilot 提升 matlab 编程效率。</p>
+}</script><meta name="generator" content="Hexo 8.1.1"></head><body><div class="post" id="body-wrap"><header class="post-bg" id="page-header"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">dddddzc's blog</span></a><a class="nav-page-title" href="/"><span class="site-name">Vscode + Github Copilot接入MATLAB</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  返回首页</span></span></a></span><div id="menus"></div></nav><div id="post-info"><h1 class="post-title">Vscode + Github Copilot接入MATLAB</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-03-14T07:50:36.000Z" title="发表于 2026-03-14 15:50:36">2026-03-14</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-03-14T08:35:50.123Z" title="更新于 2026-03-14 16:35:50">2026-03-14</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E7%BC%96%E7%A8%8B%E5%B7%A5%E5%85%B7/">编程工具</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>matlab 的编辑器虽然功能齐全，但在代码补全和智能提示方面完全不如现代编辑器例如 vscode（可以接入 AI 插件提效）。本文将介绍如何使用 vscode + github copilot 提升 matlab 编程效率。</p>
 <p>以前的配置很麻烦，但由于 matlab 官方对 vscode 的插件支持，现在的接入方式非常简单：</p>
 <h2 id="前置准备"><a href="#前置准备" class="headerlink" title="前置准备"></a>前置准备</h2><ol>
 <li>安装 vscode 和 MATLAB，这一步不多说，但 MATLAB 的版本越新越好（R2023a 及以上，强推R2025b）。</li>
@@ -181,9 +181,9 @@
 </li>
 <li><p>run selection 和 run section<br><img src="https://raw.githubusercontent.com/dddddzc/ImageBed/main/img/20260314162204183.png"></p>
 </li>
-<li><p>调试<br>在 vscode 中，代码行左侧正常打断点，按 F5 就可以调试了，和在 MATLAB 前端调试一样。断点、单步执行、查看变量等功能都支持。<br><img src="https://raw.githubusercontent.com/dddddzc/ImageBed/main/img/20260314162320434.png"><br>如果配置了这个，那么直接点击运动就可以进入调试模式。<br><img src="https://raw.githubusercontent.com/dddddzc/ImageBed/main/img/20260314162429535.png"></p>
+<li><p>调试<br>在 vscode 中，代码行左侧正常打断点，按 F5 就可以调试了，和在 MATLAB 前端调试一样。断点、单步执行、查看变量等功能都支持。<br><img src="https://raw.githubusercontent.com/dddddzc/ImageBed/main/img/20260314162320434.png"><br>如果配置了这个，那么直接点击运行就可以进入调试模式。<br><img src="https://raw.githubusercontent.com/dddddzc/ImageBed/main/img/20260314162429535.png"></p>
 </li>
-<li><p>批量修改变量<br>选中变量，按 F2，就可以批量修改变量名了。<br><img src="https://raw.githubusercontent.com/dddddzc/ImageBed/main/img/20260314162534816.png"><br>可以 使用 Enter 直接重命名，或者 Ctrl + Enter 先预览再修改（下图）。个人感觉甚至比 MATLAB 原生的重命名功能更方便。<br><img src="https://raw.githubusercontent.com/dddddzc/ImageBed/main/img/20260314162725935.png"><br>其他高级功能例如例如绘图也可以正常使用。个人感觉唯一的不足是，不支持随时查看变量值，但无伤大雅。个人喜欢在 vscode 的 MATLAB 终端中敲出 desktop 调出 MATLAB 前端以偶尔查看变量。有非官方插件实现了这一点，但我对这个需求没太大要求，于是没装。</p>
+<li><p>批量修改变量<br>选中变量，按 F2，就可以批量修改变量名了。<br><img src="https://raw.githubusercontent.com/dddddzc/ImageBed/main/img/20260314162534816.png"><br>可以使用 Enter 直接重命名，或者 Ctrl + Enter 先预览再修改（下图）。个人感觉甚至比 MATLAB 原生的重命名功能更方便。<br><img src="https://raw.githubusercontent.com/dddddzc/ImageBed/main/img/20260314162725935.png"><br>其他高级功能例如例如绘图也可以正常使用。个人感觉唯一的不足是【不支持随时查看变量值】，但无伤大雅。个人喜欢在 vscode 的 MATLAB 终端中敲出 desktop 调出 MATLAB 前端以偶尔查看变量。有非官方插件实现了这一点，但我对这个需求没太大要求，于是没装。</p>
 </li>
 </ol>
 <h2 id="配合-GitHub-Copilot-Chat-插件使用"><a href="#配合-GitHub-Copilot-Chat-插件使用" class="headerlink" title="配合 GitHub Copilot Chat 插件使用"></a>配合 GitHub Copilot Chat 插件使用</h2><p>这个就无须多言了，在 Copilot 的聊天窗口进行对话即可，Ask&#x2F;Plan&#x2F;Agent三个模式都可以使用，对于学生档免费使用 Github Copilot 更是友好。下图是用 Agent 模式，帮我免去了注释&#x2F;批量修改代码的麻烦。</p>
