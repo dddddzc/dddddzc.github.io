@@ -1,0 +1,617 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>Spring 分层架构解析 | dddddzc's blog</title><meta name="author" content="dddddzc"><meta name="copyright" content="dddddzc"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="为了学习 Java 和 Spring，我让 AI 给我写了一套前后端完善的，适用于教学用途的电商代码。其中的 Spring Boot 单体分层架构如下：  controller：对外暴露接口，负责请求接收、参数校验入口、响应返回 service：定义业务能力接口 service.impl：实现具体业务逻辑 mapper：数据库访问层 entity：数据库实体对象 dto：请求参数对象 vo：响应对">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Spring 分层架构解析">
+<meta property="og:url" content="https://dddddzc.github.io/2026/04/10/Spring-%E5%88%86%E5%B1%82%E6%9E%B6%E6%9E%84%E8%A7%A3%E6%9E%90/index.html">
+<meta property="og:site_name" content="dddddzc&#39;s blog">
+<meta property="og:description" content="为了学习 Java 和 Spring，我让 AI 给我写了一套前后端完善的，适用于教学用途的电商代码。其中的 Spring Boot 单体分层架构如下：  controller：对外暴露接口，负责请求接收、参数校验入口、响应返回 service：定义业务能力接口 service.impl：实现具体业务逻辑 mapper：数据库访问层 entity：数据库实体对象 dto：请求参数对象 vo：响应对">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://dddddzc.github.io/img/profile.jpg">
+<meta property="article:published_time" content="2026-04-10T01:55:07.000Z">
+<meta property="article:modified_time" content="2026-04-10T02:20:33.310Z">
+<meta property="article:author" content="dddddzc">
+<meta property="article:tag" content="Spring">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://dddddzc.github.io/img/profile.jpg"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Spring 分层架构解析",
+  "url": "https://dddddzc.github.io/2026/04/10/Spring-%E5%88%86%E5%B1%82%E6%9E%B6%E6%9E%84%E8%A7%A3%E6%9E%90/",
+  "image": "https://dddddzc.github.io/img/profile.jpg",
+  "datePublished": "2026-04-10T01:55:07.000Z",
+  "dateModified": "2026-04-10T02:20:33.310Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "dddddzc",
+      "url": "https://dddddzc.github.io"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://dddddzc.github.io/2026/04/10/Spring-%E5%88%86%E5%B1%82%E6%9E%B6%E6%9E%84%E8%A7%A3%E6%9E%90/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css?v=5.5.4"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.1.0/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.13.0/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'Spring 分层架构解析',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><meta name="generator" content="Hexo 8.1.1"></head><body><div class="post" id="body-wrap"><header class="post-bg" id="page-header"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">dddddzc's blog</span></a><a class="nav-page-title" href="/"><span class="site-name">Spring 分层架构解析</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  返回首页</span></span></a></span><div id="menus"></div></nav><div id="post-info"><h1 class="post-title">Spring 分层架构解析</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-04-10T01:55:07.000Z" title="发表于 2026-04-10 09:55:07">2026-04-10</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-04-10T02:20:33.310Z" title="更新于 2026-04-10 10:20:33">2026-04-10</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Java/">Java</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><p>为了学习 Java 和 Spring，我让 AI 给我写了一套前后端完善的，适用于教学用途的电商代码。其中的 Spring Boot 单体分层架构如下：</p>
+<ul>
+<li>controller：对外暴露接口，负责请求接收、参数校验入口、响应返回</li>
+<li>service：定义业务能力接口</li>
+<li>service.impl：实现具体业务逻辑</li>
+<li>mapper：数据库访问层</li>
+<li>entity：数据库实体对象</li>
+<li>dto：请求参数对象</li>
+<li>vo：响应对象</li>
+<li>common：统一返回、常量、分页等通用基础能力</li>
+<li>config：全局配置类</li>
+<li>security：认证授权相关能力</li>
+<li>exception：异常体系</li>
+<li>enums：状态与角色枚举</li>
+<li>utils：工具类</li>
+</ul>
+<p>这样做的目的，是让项目更容易维护、测试、扩展，也让多人协作时不容易把代码写乱。</p>
+<p><strong>“按职责拆分代码，让每一层只做自己该做的事。”</strong></p>
+<p>下面详细解释每一类分别负责什么、通常放什么代码、以及彼此之间怎么配合。</p>
+<hr>
+<h2 id="整体分层思路"><a href="#整体分层思路" class="headerlink" title="整体分层思路"></a>整体分层思路</h2><p>一次典型请求，通常会这样流转：</p>
+<p><strong>前端请求 → controller → service → mapper → 数据库</strong><br>然后结果再一层层返回：</p>
+<p><strong>数据库结果 → mapper → service → controller → 返回给前端</strong></p>
+<p>其中：</p>
+<ul>
+<li><strong>controller</strong> 更靠近“接口层”</li>
+<li><strong>service</strong> 更靠近“业务层”</li>
+<li><strong>mapper</strong> 更靠近“数据层”</li>
+</ul>
+<p>而像 <code>dto</code>、<code>vo</code>、<code>entity</code>，则是不同层之间传递数据时使用的对象。</p>
+<hr>
+<h2 id="controller：接口控制层"><a href="#controller：接口控制层" class="headerlink" title="controller：接口控制层"></a>controller：接口控制层</h2><h3 id="它是干什么的"><a href="#它是干什么的" class="headerlink" title="它是干什么的"></a>它是干什么的</h3><p><code>controller</code> 是系统对外的入口，负责接收前端或外部系统发来的 HTTP 请求。</p>
+<p>它主要做这几件事：</p>
+<ul>
+<li>定义接口路径，如 <code>/user/login</code>、<code>/order/list</code></li>
+<li>接收请求参数</li>
+<li>触发参数校验</li>
+<li>调用 <code>service</code></li>
+<li>把结果包装后返回给前端</li>
+</ul>
+<h3 id="它应该做什么"><a href="#它应该做什么" class="headerlink" title="它应该做什么"></a>它应该做什么</h3><p>适合放：</p>
+<ul>
+<li><code>@RestController</code></li>
+<li><code>@RequestMapping</code> &#x2F; <code>@GetMapping</code> &#x2F; <code>@PostMapping</code></li>
+<li><code>@RequestBody</code> &#x2F; <code>@PathVariable</code> &#x2F; <code>@RequestParam</code></li>
+<li>参数校验注解入口，如 <code>@Valid</code></li>
+</ul>
+<h3 id="它不应该做什么"><a href="#它不应该做什么" class="headerlink" title="它不应该做什么"></a>它不应该做什么</h3><p>不应该在这里写太多业务逻辑，比如：</p>
+<ul>
+<li>不要在 controller 里写复杂 if&#x2F;else 业务判断</li>
+<li>不要直接操作数据库</li>
+<li>不要在这里拼大量 SQL</li>
+<li>不要把认证、库存扣减、订单计算等核心逻辑堆进来</li>
+</ul>
+<h3 id="为什么这样设计"><a href="#为什么这样设计" class="headerlink" title="为什么这样设计"></a>为什么这样设计</h3><p>因为 controller 的职责应该很单纯：<br><strong>“把请求交给业务层，把业务结果返回出去。”</strong></p>
+<h3 id="示例理解"><a href="#示例理解" class="headerlink" title="示例理解"></a>示例理解</h3><p>比如“用户注册”：</p>
+<ul>
+<li>controller 接收用户名、密码、手机号</li>
+<li>校验参数格式是否正确</li>
+<li>调用 <code>userService.register()</code></li>
+<li>返回“注册成功”或者错误信息</li>
+</ul>
+<hr>
+<h2 id="service：业务能力接口层"><a href="#service：业务能力接口层" class="headerlink" title="service：业务能力接口层"></a>service：业务能力接口层</h2><h3 id="它是干什么的-1"><a href="#它是干什么的-1" class="headerlink" title="它是干什么的"></a>它是干什么的</h3><p><code>service</code> 负责定义系统的业务能力，通常写成接口。</p>
+<p>例如：</p>
+<ul>
+<li>用户注册</li>
+<li>用户登录</li>
+<li>创建订单</li>
+<li>查询商品列表</li>
+</ul>
+<p>它描述的是：<strong>系统能做什么事</strong>。</p>
+<h3 id="为什么要写接口"><a href="#为什么要写接口" class="headerlink" title="为什么要写接口"></a>为什么要写接口</h3><p>写成接口有几个好处：</p>
+<ul>
+<li>业务定义和业务实现分离</li>
+<li>方便测试和替换实现</li>
+<li>代码结构更清晰</li>
+<li>面向接口编程，扩展性更好</li>
+</ul>
+<h3 id="它通常放什么"><a href="#它通常放什么" class="headerlink" title="它通常放什么"></a>它通常放什么</h3><p>比如：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">UserService</span> &#123;</span><br><span class="line">    <span class="keyword">void</span> <span class="title function_">register</span><span class="params">(RegisterRequest request)</span>;</span><br><span class="line">    LoginVO <span class="title function_">login</span><span class="params">(LoginRequest request)</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这里不一定写具体实现，只定义方法。</p>
+<h3 id="核心定位"><a href="#核心定位" class="headerlink" title="核心定位"></a>核心定位</h3><p><code>service</code> 是业务层的“门面”或“抽象定义”。</p>
+<hr>
+<h2 id="service-impl：业务实现层"><a href="#service-impl：业务实现层" class="headerlink" title="service.impl：业务实现层"></a>service.impl：业务实现层</h2><h3 id="它是干什么的-2"><a href="#它是干什么的-2" class="headerlink" title="它是干什么的"></a>它是干什么的</h3><p><code>service.impl</code> 是 <code>service</code> 接口的具体实现，真正写业务逻辑的地方。</p>
+<h3 id="它通常负责什么"><a href="#它通常负责什么" class="headerlink" title="它通常负责什么"></a>它通常负责什么</h3><p>这里是项目里最核心的部分之一，常做的事有：</p>
+<ul>
+<li>校验业务规则</li>
+<li>组合多个 mapper 查询</li>
+<li>调用其他 service</li>
+<li>处理事务</li>
+<li>做状态流转</li>
+<li>做权限判断中的业务部分</li>
+<li>生成订单、计算金额、库存扣减等</li>
+</ul>
+<h3 id="举例"><a href="#举例" class="headerlink" title="举例"></a>举例</h3><p>以注册为例，<code>service.impl</code> 中可能会做：</p>
+<ul>
+<li>判断用户名是否已存在</li>
+<li>判断手机号是否已注册</li>
+<li>密码加密</li>
+<li>构造用户实体</li>
+<li>调用 mapper 入库</li>
+</ul>
+<h3 id="为什么不放到-controller"><a href="#为什么不放到-controller" class="headerlink" title="为什么不放到 controller"></a>为什么不放到 controller</h3><p>因为这些都是<strong>业务规则</strong>，不是“接口接收”该负责的事。</p>
+<h3 id="常见注解"><a href="#常见注解" class="headerlink" title="常见注解"></a>常见注解</h3><ul>
+<li><code>@Service</code></li>
+<li><code>@Transactional</code></li>
+</ul>
+<h3 id="一句话理解"><a href="#一句话理解" class="headerlink" title="一句话理解"></a>一句话理解</h3><p><code>service.impl</code> 决定了：<br><strong>“这件业务到底怎么做。”</strong></p>
+<hr>
+<h2 id="mapper：数据访问层"><a href="#mapper：数据访问层" class="headerlink" title="mapper：数据访问层"></a>mapper：数据访问层</h2><h3 id="它是干什么的-3"><a href="#它是干什么的-3" class="headerlink" title="它是干什么的"></a>它是干什么的</h3><p><code>mapper</code> 专门负责和数据库打交道。</p>
+<p>它做的事情是：</p>
+<ul>
+<li>查询数据库</li>
+<li>插入数据</li>
+<li>更新数据</li>
+<li>删除数据</li>
+</ul>
+<h3 id="常见形式"><a href="#常见形式" class="headerlink" title="常见形式"></a>常见形式</h3><p>如果你用的是 MyBatis &#x2F; MyBatis-Plus，<code>mapper</code> 往往是接口：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">UserMapper</span> <span class="keyword">extends</span> <span class="title class_">BaseMapper</span>&lt;User&gt; &#123;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>或者自定义一些查询方法。</p>
+<h3 id="它应该只关心数据"><a href="#它应该只关心数据" class="headerlink" title="它应该只关心数据"></a>它应该只关心数据</h3><p>mapper 只回答这些问题：</p>
+<ul>
+<li>数据怎么查</li>
+<li>数据怎么存</li>
+</ul>
+<p>它不应该关心：</p>
+<ul>
+<li>用户能不能注册</li>
+<li>订单该不该创建</li>
+<li>库存逻辑是否合法</li>
+</ul>
+<p>这些属于业务逻辑，应该放在 <code>service.impl</code>。</p>
+<h3 id="一句话理解-1"><a href="#一句话理解-1" class="headerlink" title="一句话理解"></a>一句话理解</h3><p><code>mapper</code> 是业务层访问数据库的“通道”。</p>
+<hr>
+<h2 id="entity：数据库实体对象"><a href="#entity：数据库实体对象" class="headerlink" title="entity：数据库实体对象"></a>entity：数据库实体对象</h2><h3 id="它是干什么的-4"><a href="#它是干什么的-4" class="headerlink" title="它是干什么的"></a>它是干什么的</h3><p><code>entity</code> 一般对应数据库表中的一条记录，是数据库实体的 Java 映射。</p>
+<p>比如数据库有一张 <code>user</code> 表，那么通常会有一个 <code>User</code> 实体类。</p>
+<h3 id="它通常包含什么"><a href="#它通常包含什么" class="headerlink" title="它通常包含什么"></a>它通常包含什么</h3><ul>
+<li>表字段对应的属性</li>
+<li>ORM 注解</li>
+<li>getter&#x2F;setter</li>
+<li>基础字段，如 id、createTime、updateTime</li>
+</ul>
+<p>例如：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">User</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> Long id;</span><br><span class="line">    <span class="keyword">private</span> String username;</span><br><span class="line">    <span class="keyword">private</span> String password;</span><br><span class="line">    <span class="keyword">private</span> String phone;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="它的特点"><a href="#它的特点" class="headerlink" title="它的特点"></a>它的特点</h3><p>它更偏向“数据库结构”，而不是“接口结构”。</p>
+<h3 id="为什么不能直接拿-entity-当接口参数-返回值"><a href="#为什么不能直接拿-entity-当接口参数-返回值" class="headerlink" title="为什么不能直接拿 entity 当接口参数&#x2F;返回值"></a>为什么不能直接拿 entity 当接口参数&#x2F;返回值</h3><p>因为 entity 往往包含数据库内部字段，比如：</p>
+<ul>
+<li>password</li>
+<li>deleteFlag</li>
+<li>createTime</li>
+<li>updateTime</li>
+</ul>
+<p>这些不一定适合直接暴露给前端。</p>
+<p>所以通常会再拆出 <code>dto</code> 和 <code>vo</code>。</p>
+<h3 id="一句话理解-2"><a href="#一句话理解-2" class="headerlink" title="一句话理解"></a>一句话理解</h3><p><code>entity</code> 表示：<br><strong>“数据库里这张表，在 Java 里的样子。”</strong></p>
+<hr>
+<h2 id="dto：请求参数对象"><a href="#dto：请求参数对象" class="headerlink" title="dto：请求参数对象"></a>dto：请求参数对象</h2><h3 id="它是干什么的-5"><a href="#它是干什么的-5" class="headerlink" title="它是干什么的"></a>它是干什么的</h3><p><code>dto</code> 一般指 Data Transfer Object，在很多 Spring Boot 项目里，常用来表示<strong>前端传入的请求参数对象</strong>。</p>
+<p>比如：</p>
+<ul>
+<li>注册请求参数</li>
+<li>登录请求参数</li>
+<li>新增商品请求参数</li>
+<li>修改订单状态请求参数</li>
+</ul>
+<h3 id="为什么不用-entity-接收请求"><a href="#为什么不用-entity-接收请求" class="headerlink" title="为什么不用 entity 接收请求"></a>为什么不用 entity 接收请求</h3><p>因为前端传来的数据，和数据库表字段，不一定是一回事。</p>
+<p>例如注册请求：</p>
+<ul>
+<li>前端传 <code>username</code></li>
+<li>前端传 <code>password</code></li>
+<li>前端传 <code>confirmPassword</code></li>
+</ul>
+<p>但数据库表里可能并没有 <code>confirmPassword</code> 这个字段。</p>
+<p>所以请求参数应该独立成一个 DTO。</p>
+<h3 id="dto-的作用"><a href="#dto-的作用" class="headerlink" title="dto 的作用"></a>dto 的作用</h3><ul>
+<li>承接请求数据</li>
+<li>配合参数校验注解使用</li>
+<li>避免前端直接操作数据库实体</li>
+<li>让接口语义更清晰</li>
+</ul>
+<h3 id="示例"><a href="#示例" class="headerlink" title="示例"></a>示例</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">RegisterRequest</span> &#123;</span><br><span class="line">    <span class="meta">@NotBlank</span></span><br><span class="line">    <span class="keyword">private</span> String username;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@NotBlank</span></span><br><span class="line">    <span class="keyword">private</span> String password;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@NotBlank</span></span><br><span class="line">    <span class="keyword">private</span> String confirmPassword;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="一句话理解-3"><a href="#一句话理解-3" class="headerlink" title="一句话理解"></a>一句话理解</h3><p><code>dto</code> 表示：<br><strong>“前端把什么数据传给我。”</strong></p>
+<hr>
+<h2 id="vo：响应对象"><a href="#vo：响应对象" class="headerlink" title="vo：响应对象"></a>vo：响应对象</h2><h3 id="它是干什么的-6"><a href="#它是干什么的-6" class="headerlink" title="它是干什么的"></a>它是干什么的</h3><p><code>vo</code> 一般指 View Object，用来表示<strong>返回给前端的数据结构</strong>。</p>
+<h3 id="为什么不用-entity-直接返回"><a href="#为什么不用-entity-直接返回" class="headerlink" title="为什么不用 entity 直接返回"></a>为什么不用 entity 直接返回</h3><p>因为数据库实体里的字段，往往不适合原样返回：</p>
+<ul>
+<li>密码不能返回</li>
+<li>删除标志不一定要返回</li>
+<li>某些内部字段前端不关心</li>
+<li>有些字段需要二次加工后再返回</li>
+</ul>
+<h3 id="vo-的作用"><a href="#vo-的作用" class="headerlink" title="vo 的作用"></a>vo 的作用</h3><ul>
+<li>控制返回给前端的数据范围</li>
+<li>屏蔽敏感字段</li>
+<li>支持组合字段、展示字段</li>
+<li>让接口返回更稳定</li>
+</ul>
+<h3 id="示例-1"><a href="#示例-1" class="headerlink" title="示例"></a>示例</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">UserVO</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> Long id;</span><br><span class="line">    <span class="keyword">private</span> String username;</span><br><span class="line">    <span class="keyword">private</span> String nickname;</span><br><span class="line">    <span class="keyword">private</span> String token;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="一句话理解-4"><a href="#一句话理解-4" class="headerlink" title="一句话理解"></a>一句话理解</h3><p><code>vo</code> 表示：<br><strong>“我要把什么数据展示给前端。”</strong></p>
+<hr>
+<h2 id="common：通用基础能力"><a href="#common：通用基础能力" class="headerlink" title="common：通用基础能力"></a>common：通用基础能力</h2><h3 id="它是干什么的-7"><a href="#它是干什么的-7" class="headerlink" title="它是干什么的"></a>它是干什么的</h3><p><code>common</code> 放的是很多模块都会重复使用的公共代码。</p>
+<h3 id="常见内容"><a href="#常见内容" class="headerlink" title="常见内容"></a>常见内容</h3><p>比如：</p>
+<ul>
+<li>统一返回结果 <code>Result&lt;T&gt;</code></li>
+<li>分页对象 <code>PageResult&lt;T&gt;</code></li>
+<li>常量类</li>
+<li>通用状态码</li>
+<li>基础请求&#x2F;响应父类</li>
+<li>通用分页参数对象</li>
+</ul>
+<h3 id="为什么要单独放"><a href="#为什么要单独放" class="headerlink" title="为什么要单独放"></a>为什么要单独放</h3><p>因为这些代码不属于某一个具体业务模块，而是整个项目都会用到的“基础设施”。</p>
+<h3 id="示例-2"><a href="#示例-2" class="headerlink" title="示例"></a>示例</h3><p>统一返回：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Result</span>&lt;T&gt; &#123;</span><br><span class="line">    <span class="keyword">private</span> Integer code;</span><br><span class="line">    <span class="keyword">private</span> String message;</span><br><span class="line">    <span class="keyword">private</span> T data;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这样所有接口都可以统一返回格式。</p>
+<h3 id="一句话理解-5"><a href="#一句话理解-5" class="headerlink" title="一句话理解"></a>一句话理解</h3><p><code>common</code> 是项目里的“公共零件库”。</p>
+<hr>
+<h2 id="config：全局配置类"><a href="#config：全局配置类" class="headerlink" title="config：全局配置类"></a>config：全局配置类</h2><h3 id="它是干什么的-8"><a href="#它是干什么的-8" class="headerlink" title="它是干什么的"></a>它是干什么的</h3><p><code>config</code> 用来放项目级别的配置代码。</p>
+<h3 id="常见内容-1"><a href="#常见内容-1" class="headerlink" title="常见内容"></a>常见内容</h3><p>例如：</p>
+<ul>
+<li>Spring MVC 配置</li>
+<li>MyBatis 配置</li>
+<li>跨域配置</li>
+<li>Jackson 时间格式配置</li>
+<li>Redis 配置</li>
+<li>Swagger&#x2F;OpenAPI 配置</li>
+<li>线程池配置</li>
+<li>拦截器注册</li>
+<li>Bean 注册</li>
+</ul>
+<h3 id="举例-1"><a href="#举例-1" class="headerlink" title="举例"></a>举例</h3><p>比如你希望：</p>
+<ul>
+<li>全局允许跨域</li>
+<li>配置接口文档</li>
+<li>配置密码加密器 <code>PasswordEncoder</code></li>
+<li>配置统一时间格式</li>
+</ul>
+<p>这些一般放在 <code>config</code>。</p>
+<h3 id="一句话理解-6"><a href="#一句话理解-6" class="headerlink" title="一句话理解"></a>一句话理解</h3><p><code>config</code> 是项目运行规则和组件装配的地方。</p>
+<hr>
+<h2 id="security：认证授权相关能力"><a href="#security：认证授权相关能力" class="headerlink" title="security：认证授权相关能力"></a>security：认证授权相关能力</h2><h3 id="它是干什么的-9"><a href="#它是干什么的-9" class="headerlink" title="它是干什么的"></a>它是干什么的</h3><p><code>security</code> 负责登录认证、权限校验这一套安全相关能力。</p>
+<h3 id="常见职责"><a href="#常见职责" class="headerlink" title="常见职责"></a>常见职责</h3><ul>
+<li>登录认证</li>
+<li>JWT 生成与解析</li>
+<li>用户身份获取</li>
+<li>权限校验</li>
+<li>Spring Security 配置</li>
+<li>过滤器</li>
+<li>用户上下文</li>
+</ul>
+<h3 id="它和-service-的区别"><a href="#它和-service-的区别" class="headerlink" title="它和 service 的区别"></a>它和 service 的区别</h3><ul>
+<li><code>security</code> 关注“你是谁、你能不能访问”</li>
+<li><code>service.impl</code> 关注“这件业务该怎么做”</li>
+</ul>
+<p>比如：</p>
+<p>用户请求删除订单时：</p>
+<ul>
+<li><code>security</code> 先判断用户是否登录、有无权限</li>
+<li><code>service.impl</code> 再判断订单状态是否允许删除</li>
+</ul>
+<h3 id="一句话理解-7"><a href="#一句话理解-7" class="headerlink" title="一句话理解"></a>一句话理解</h3><p><code>security</code> 管的是：<br><strong>“你有没有资格做这件事。”</strong></p>
+<hr>
+<h2 id="exception：异常体系"><a href="#exception：异常体系" class="headerlink" title="exception：异常体系"></a>exception：异常体系</h2><h3 id="它是干什么的-10"><a href="#它是干什么的-10" class="headerlink" title="它是干什么的"></a>它是干什么的</h3><p><code>exception</code> 用来统一管理项目中的异常。</p>
+<h3 id="常见内容-2"><a href="#常见内容-2" class="headerlink" title="常见内容"></a>常见内容</h3><ul>
+<li>自定义业务异常 <code>BusinessException</code></li>
+<li>全局异常处理器 <code>GlobalExceptionHandler</code></li>
+<li>参数校验异常处理</li>
+<li>系统异常统一兜底</li>
+</ul>
+<h3 id="为什么要统一异常处理"><a href="#为什么要统一异常处理" class="headerlink" title="为什么要统一异常处理"></a>为什么要统一异常处理</h3><p>如果没有统一异常处理：</p>
+<ul>
+<li>接口报错格式会乱</li>
+<li>前端难以处理</li>
+<li>错误信息不规范</li>
+<li>代码里到处 try-catch 很臃肿</li>
+</ul>
+<h3 id="典型设计"><a href="#典型设计" class="headerlink" title="典型设计"></a>典型设计</h3><ul>
+<li>业务错误：抛 <code>BusinessException</code></li>
+<li>全局异常处理器统一转换成标准返回格式</li>
+</ul>
+<p>例如：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">BusinessException</span>(<span class="string">&quot;用户名已存在&quot;</span>);</span><br></pre></td></tr></table></figure>
+
+<p>然后全局处理器返回：</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="punctuation">&#123;</span></span><br><span class="line">  <span class="attr">&quot;code&quot;</span><span class="punctuation">:</span> <span class="number">4001</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;message&quot;</span><span class="punctuation">:</span> <span class="string">&quot;用户名已存在&quot;</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;data&quot;</span><span class="punctuation">:</span> <span class="literal"><span class="keyword">null</span></span></span><br><span class="line"><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="一句话理解-8"><a href="#一句话理解-8" class="headerlink" title="一句话理解"></a>一句话理解</h3><p><code>exception</code> 负责：<br><strong>“系统出了错，怎么优雅地告诉前端。”</strong></p>
+<hr>
+<h2 id="enums：枚举类"><a href="#enums：枚举类" class="headerlink" title="enums：枚举类"></a>enums：枚举类</h2><h3 id="它是干什么的-11"><a href="#它是干什么的-11" class="headerlink" title="它是干什么的"></a>它是干什么的</h3><p><code>enums</code> 用来定义一些固定取值的状态、类型、角色等。</p>
+<h3 id="常见场景"><a href="#常见场景" class="headerlink" title="常见场景"></a>常见场景</h3><p>比如：</p>
+<ul>
+<li>用户角色：ADMIN、USER</li>
+<li>订单状态：UNPAID、PAID、CANCELLED</li>
+<li>删除标记：YES、NO</li>
+<li>性别：MALE、FEMALE</li>
+<li>状态码定义</li>
+</ul>
+<h3 id="为什么不用魔法值"><a href="#为什么不用魔法值" class="headerlink" title="为什么不用魔法值"></a>为什么不用魔法值</h3><p>如果直接在代码里写：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (user.getRole() == <span class="number">1</span>)</span><br></pre></td></tr></table></figure>
+
+<p>别人根本不知道 1 是什么。</p>
+<p>而用枚举：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (UserRoleEnum.ADMIN.getCode().equals(user.getRole()))</span><br></pre></td></tr></table></figure>
+
+<p>语义就清楚很多。</p>
+<h3 id="一句话理解-9"><a href="#一句话理解-9" class="headerlink" title="一句话理解"></a>一句话理解</h3><p><code>enums</code> 是把固定状态“起名字”，让代码可读性更强。</p>
+<hr>
+<h2 id="utils：工具类"><a href="#utils：工具类" class="headerlink" title="utils：工具类"></a>utils：工具类</h2><h3 id="它是干什么的-12"><a href="#它是干什么的-12" class="headerlink" title="它是干什么的"></a>它是干什么的</h3><p><code>utils</code> 放一些无状态、通用、和业务弱相关的辅助方法。</p>
+<h3 id="常见工具类"><a href="#常见工具类" class="headerlink" title="常见工具类"></a>常见工具类</h3><p>比如：</p>
+<ul>
+<li>日期工具类</li>
+<li>字符串工具类</li>
+<li>ID 生成工具</li>
+<li>Bean 拷贝工具</li>
+<li>JWT 工具类</li>
+<li>文件处理工具</li>
+<li>脱敏工具</li>
+</ul>
+<h3 id="注意事项"><a href="#注意事项" class="headerlink" title="注意事项"></a>注意事项</h3><p>工具类适合放“通用能力”，不适合塞复杂业务逻辑。</p>
+<p>比如：</p>
+<ul>
+<li><code>DateUtils.format()</code> 可以放 utils</li>
+<li>“用户注册时检查邀请码是否合法” 不能放 utils</li>
+</ul>
+<p>因为后者是业务逻辑。</p>
+<h3 id="一句话理解-10"><a href="#一句话理解-10" class="headerlink" title="一句话理解"></a>一句话理解</h3><p><code>utils</code> 是项目中的“辅助小工具箱”。</p>
+<hr>
+<h2 id="dto、entity、vo-的区别"><a href="#dto、entity、vo-的区别" class="headerlink" title="dto、entity、vo 的区别"></a>dto、entity、vo 的区别</h2><h3 id="dto-接收请求用"><a href="#dto-接收请求用" class="headerlink" title="dto:接收请求用"></a>dto:接收请求用</h3><p>前端传什么，我用什么对象接。</p>
+<h3 id="entity-映射数据库用"><a href="#entity-映射数据库用" class="headerlink" title="entity:映射数据库用"></a>entity:映射数据库用</h3><p>数据库表长什么样，我用什么对象表示。</p>
+<h3 id="vo-返回前端用"><a href="#vo-返回前端用" class="headerlink" title="vo:返回前端用"></a>vo:返回前端用</h3><p>我要展示给前端什么，就定义什么对象。</p>
+<h3 id="举个完整例子：用户注册后查询用户信息"><a href="#举个完整例子：用户注册后查询用户信息" class="headerlink" title="举个完整例子：用户注册后查询用户信息"></a>举个完整例子：用户注册后查询用户信息</h3><p><strong>前端传入：</strong></p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="punctuation">&#123;</span></span><br><span class="line">  <span class="attr">&quot;username&quot;</span><span class="punctuation">:</span> <span class="string">&quot;zhangsan&quot;</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;password&quot;</span><span class="punctuation">:</span> <span class="string">&quot;123456&quot;</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;confirmPassword&quot;</span><span class="punctuation">:</span> <span class="string">&quot;123456&quot;</span></span><br><span class="line"><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
+
+<p>这对应 <code>RegisterRequest DTO</code></p>
+<p><strong>service 处理后入库：</strong></p>
+<p>构造 <code>User entity</code></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">User</span> <span class="variable">user</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">User</span>();</span><br><span class="line">user.setUsername(request.getUsername());</span><br><span class="line">user.setPassword(encodedPassword);</span><br></pre></td></tr></table></figure>
+
+<p><strong>最终返回前端：</strong></p>
+<p>返回 <code>UserVO</code></p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="punctuation">&#123;</span></span><br><span class="line">  <span class="attr">&quot;id&quot;</span><span class="punctuation">:</span> <span class="number">1</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;username&quot;</span><span class="punctuation">:</span> <span class="string">&quot;zhangsan&quot;</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;nickname&quot;</span><span class="punctuation">:</span> <span class="string">&quot;张三&quot;</span></span><br><span class="line"><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
+
+<p>不会把 password 返回出去。</p>
+<hr>
+<h2 id="为什么这种架构很常见"><a href="#为什么这种架构很常见" class="headerlink" title="为什么这种架构很常见"></a>为什么这种架构很常见</h2><h3 id="职责清晰"><a href="#职责清晰" class="headerlink" title="职责清晰"></a>职责清晰</h3><p>每一层知道自己该干什么，不容易乱。</p>
+<h3 id="易维护"><a href="#易维护" class="headerlink" title="易维护"></a>易维护</h3><p>以后改数据库逻辑，多半改 mapper 或 service；<br>改接口格式，多半改 controller &#x2F; dto &#x2F; vo。</p>
+<h3 id="易测试"><a href="#易测试" class="headerlink" title="易测试"></a>易测试</h3><p>service 可以单独测业务逻辑。<br>controller 可以测接口行为。<br>mapper 可以测数据访问。</p>
+<h3 id="易扩展"><a href="#易扩展" class="headerlink" title="易扩展"></a>易扩展</h3><p>以后加缓存、加权限、加日志、加事务，都有明确落点。</p>
+<h3 id="团队协作友好"><a href="#团队协作友好" class="headerlink" title="团队协作友好"></a>团队协作友好</h3><p>前后端、不同后端开发人员，都容易理解项目结构。</p>
+<hr>
+<h2 id="你可以把它记成一句话"><a href="#你可以把它记成一句话" class="headerlink" title="你可以把它记成一句话"></a>你可以把它记成一句话</h2><h3 id="请求流转"><a href="#请求流转" class="headerlink" title="请求流转"></a>请求流转</h3><p><strong>Controller 收请求，Service 讲业务，Mapper 查数据。</strong></p>
+<h3 id="对象职责"><a href="#对象职责" class="headerlink" title="对象职责"></a>对象职责</h3><p><strong>DTO 接参数，Entity 对表，VO 做返回。</strong></p>
+<h3 id="基础支撑"><a href="#基础支撑" class="headerlink" title="基础支撑"></a>基础支撑</h3><p><strong>Common 放通用，Config 放配置，Security 管权限，Exception 管异常，Enums 管状态，Utils 放工具。</strong></p>
+<hr>
+<h2 id="实际开发中容易犯的错"><a href="#实际开发中容易犯的错" class="headerlink" title="实际开发中容易犯的错"></a>实际开发中容易犯的错</h2><h3 id="controller-写太重"><a href="#controller-写太重" class="headerlink" title="controller 写太重"></a>controller 写太重</h3><p>把很多业务逻辑堆在 controller 里，导致层次混乱。</p>
+<h3 id="entity-直接当返回对象"><a href="#entity-直接当返回对象" class="headerlink" title="entity 直接当返回对象"></a>entity 直接当返回对象</h3><p>容易把密码、内部状态等敏感字段暴露出去。</p>
+<h3 id="utils-变成“万能垃圾桶”"><a href="#utils-变成“万能垃圾桶”" class="headerlink" title="utils 变成“万能垃圾桶”"></a>utils 变成“万能垃圾桶”</h3><p>什么逻辑都往工具类里塞，最后难维护。</p>
+<h3 id="mapper-写业务判断"><a href="#mapper-写业务判断" class="headerlink" title="mapper 写业务判断"></a>mapper 写业务判断</h3><p>mapper 应该只处理数据，不应该做业务决策。</p>
+<h3 id="service-不分接口和实现"><a href="#service-不分接口和实现" class="headerlink" title="service 不分接口和实现"></a>service 不分接口和实现</h3><p>小项目可以勉强这么写，但规范项目通常还是建议区分 <code>service</code> 和 <code>service.impl</code>。</p>
+<hr>
+<h2 id="简要总结"><a href="#简要总结" class="headerlink" title="简要总结"></a>简要总结</h2><ul>
+<li><strong>controller</strong>：接口入口</li>
+<li><strong>service</strong>：业务定义接口</li>
+<li><strong>service.impl</strong>：业务实现</li>
+<li><strong>mapper</strong>：数据库访问</li>
+<li><strong>entity</strong>：表对象</li>
+<li><strong>dto</strong>：请求对象</li>
+<li><strong>vo</strong>：响应对象</li>
+<li><strong>common</strong>：通用基础</li>
+<li><strong>config</strong>：配置</li>
+<li><strong>security</strong>：安全认证</li>
+<li><strong>exception</strong>：异常处理</li>
+<li><strong>enums</strong>：枚举状态</li>
+<li><strong>utils</strong>：工具方法</li>
+</ul>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://dddddzc.github.io">dddddzc</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://dddddzc.github.io/2026/04/10/Spring-%E5%88%86%E5%B1%82%E6%9E%B6%E6%9E%84%E8%A7%A3%E6%9E%90/">https://dddddzc.github.io/2026/04/10/Spring-%E5%88%86%E5%B1%82%E6%9E%B6%E6%9E%84%E8%A7%A3%E6%9E%90/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://dddddzc.github.io" target="_blank">dddddzc's blog</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Spring/">Spring</a></div><div class="post-share"><div class="social-share" data-image="/img/profile.jpg" data-sites="facebook,x,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related full-width" href="/2026/03/25/%E5%A6%82%E4%BD%95%E5%BC%80%E5%A7%8B%E4%BD%BF%E7%94%A8-GitHub-Copilot-CLI/" title="如何使用 GitHub Copilot CLI"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">如何使用 GitHub Copilot CLI</div></div><div class="info-2"><div class="info-item-1">前言2月底购买的阿里云百炼 Coding Plan 马上就到期了，现在各家的 Coding Plan 不仅变贵了，而且买不到了，需要抢购。作为一个穷鬼，一直贯彻的是薅羊毛理念，只买便宜的。于是我想起了 github copilot。当初学生认证获得了 github copilot pro 的使用权，但一直是在 ide 内接入插件使用，没有用过 cli，今天来试试并记录一下。 安装参考官方文档，由于我们是 windows 系统，所以我选择最简单的跨平台 npm 安装方式。 1npm install -g @github/copilot 安装很简单，很快就完成了。 认证认证同样很简单，跟着官方文档的步骤来即可。 输入 copilot 命令启动后就进入了 copilot cli，界面还挺酷炫的。 最开始会有一些询问，按照提示操作即可。注意这个： 这是因为 cli 一般来说不支持多行输入，copilot cli 在询问你要不要添加一个快捷键 Shift + Enter 来支持多行输入，个人推荐添加。如果选择 Yes，就会给 Windows Terminal 加一个配置：Enter → 提...</div></div></div></a></nav><hr class="custom-hr"/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div id="giscus-wrap"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/profile.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">dddddzc</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">8</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">13</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">7</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/dddddzc"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%95%B4%E4%BD%93%E5%88%86%E5%B1%82%E6%80%9D%E8%B7%AF"><span class="toc-number">1.</span> <span class="toc-text">整体分层思路</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#controller%EF%BC%9A%E6%8E%A5%E5%8F%A3%E6%8E%A7%E5%88%B6%E5%B1%82"><span class="toc-number">2.</span> <span class="toc-text">controller：接口控制层</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%83%E6%98%AF%E5%B9%B2%E4%BB%80%E4%B9%88%E7%9A%84"><span class="toc-number">2.1.</span> <span class="toc-text">它是干什么的</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%83%E5%BA%94%E8%AF%A5%E5%81%9A%E4%BB%80%E4%B9%88"><span class="toc-number">2.2.</span> <span class="toc-text">它应该做什么</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%83%E4%B8%8D%E5%BA%94%E8%AF%A5%E5%81%9A%E4%BB%80%E4%B9%88"><span class="toc-number">2.3.</span> <span class="toc-text">它不应该做什么</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E8%BF%99%E6%A0%B7%E8%AE%BE%E8%AE%A1"><span class="toc-number">2.4.</span> <span class="toc-text">为什么这样设计</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%A4%BA%E4%BE%8B%E7%90%86%E8%A7%A3"><span class="toc-number">2.5.</span> <span class="toc-text">示例理解</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#service%EF%BC%9A%E4%B8%9A%E5%8A%A1%E8%83%BD%E5%8A%9B%E6%8E%A5%E5%8F%A3%E5%B1%82"><span class="toc-number">3.</span> <span class="toc-text">service：业务能力接口层</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%83%E6%98%AF%E5%B9%B2%E4%BB%80%E4%B9%88%E7%9A%84-1"><span class="toc-number">3.1.</span> <span class="toc-text">它是干什么的</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E8%A6%81%E5%86%99%E6%8E%A5%E5%8F%A3"><span class="toc-number">3.2.</span> <span class="toc-text">为什么要写接口</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%83%E9%80%9A%E5%B8%B8%E6%94%BE%E4%BB%80%E4%B9%88"><span class="toc-number">3.3.</span> <span class="toc-text">它通常放什么</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%A0%B8%E5%BF%83%E5%AE%9A%E4%BD%8D"><span class="toc-number">3.4.</span> <span class="toc-text">核心定位</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#service-impl%EF%BC%9A%E4%B8%9A%E5%8A%A1%E5%AE%9E%E7%8E%B0%E5%B1%82"><span class="toc-number">4.</span> <span class="toc-text">service.impl：业务实现层</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%83%E6%98%AF%E5%B9%B2%E4%BB%80%E4%B9%88%E7%9A%84-2"><span class="toc-number">4.1.</span> <span class="toc-text">它是干什么的</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%83%E9%80%9A%E5%B8%B8%E8%B4%9F%E8%B4%A3%E4%BB%80%E4%B9%88"><span class="toc-number">4.2.</span> <span class="toc-text">它通常负责什么</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%BE%E4%BE%8B"><span class="toc-number">4.3.</span> <span class="toc-text">举例</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E4%B8%8D%E6%94%BE%E5%88%B0-controller"><span class="toc-number">4.4.</span> <span class="toc-text">为什么不放到 controller</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%B8%B8%E8%A7%81%E6%B3%A8%E8%A7%A3"><span class="toc-number">4.5.</span> <span class="toc-text">常见注解</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%80%E5%8F%A5%E8%AF%9D%E7%90%86%E8%A7%A3"><span class="toc-number">4.6.</span> <span class="toc-text">一句话理解</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#mapper%EF%BC%9A%E6%95%B0%E6%8D%AE%E8%AE%BF%E9%97%AE%E5%B1%82"><span class="toc-number">5.</span> <span class="toc-text">mapper：数据访问层</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%83%E6%98%AF%E5%B9%B2%E4%BB%80%E4%B9%88%E7%9A%84-3"><span class="toc-number">5.1.</span> <span class="toc-text">它是干什么的</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%B8%B8%E8%A7%81%E5%BD%A2%E5%BC%8F"><span class="toc-number">5.2.</span> <span class="toc-text">常见形式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%83%E5%BA%94%E8%AF%A5%E5%8F%AA%E5%85%B3%E5%BF%83%E6%95%B0%E6%8D%AE"><span class="toc-number">5.3.</span> <span class="toc-text">它应该只关心数据</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%80%E5%8F%A5%E8%AF%9D%E7%90%86%E8%A7%A3-1"><span class="toc-number">5.4.</span> <span class="toc-text">一句话理解</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#entity%EF%BC%9A%E6%95%B0%E6%8D%AE%E5%BA%93%E5%AE%9E%E4%BD%93%E5%AF%B9%E8%B1%A1"><span class="toc-number">6.</span> <span class="toc-text">entity：数据库实体对象</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%83%E6%98%AF%E5%B9%B2%E4%BB%80%E4%B9%88%E7%9A%84-4"><span class="toc-number">6.1.</span> <span class="toc-text">它是干什么的</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%83%E9%80%9A%E5%B8%B8%E5%8C%85%E5%90%AB%E4%BB%80%E4%B9%88"><span class="toc-number">6.2.</span> <span class="toc-text">它通常包含什么</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%83%E7%9A%84%E7%89%B9%E7%82%B9"><span class="toc-number">6.3.</span> <span class="toc-text">它的特点</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E4%B8%8D%E8%83%BD%E7%9B%B4%E6%8E%A5%E6%8B%BF-entity-%E5%BD%93%E6%8E%A5%E5%8F%A3%E5%8F%82%E6%95%B0-%E8%BF%94%E5%9B%9E%E5%80%BC"><span class="toc-number">6.4.</span> <span class="toc-text">为什么不能直接拿 entity 当接口参数&#x2F;返回值</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%80%E5%8F%A5%E8%AF%9D%E7%90%86%E8%A7%A3-2"><span class="toc-number">6.5.</span> <span class="toc-text">一句话理解</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#dto%EF%BC%9A%E8%AF%B7%E6%B1%82%E5%8F%82%E6%95%B0%E5%AF%B9%E8%B1%A1"><span class="toc-number">7.</span> <span class="toc-text">dto：请求参数对象</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%83%E6%98%AF%E5%B9%B2%E4%BB%80%E4%B9%88%E7%9A%84-5"><span class="toc-number">7.1.</span> <span class="toc-text">它是干什么的</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E4%B8%8D%E7%94%A8-entity-%E6%8E%A5%E6%94%B6%E8%AF%B7%E6%B1%82"><span class="toc-number">7.2.</span> <span class="toc-text">为什么不用 entity 接收请求</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#dto-%E7%9A%84%E4%BD%9C%E7%94%A8"><span class="toc-number">7.3.</span> <span class="toc-text">dto 的作用</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%A4%BA%E4%BE%8B"><span class="toc-number">7.4.</span> <span class="toc-text">示例</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%80%E5%8F%A5%E8%AF%9D%E7%90%86%E8%A7%A3-3"><span class="toc-number">7.5.</span> <span class="toc-text">一句话理解</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#vo%EF%BC%9A%E5%93%8D%E5%BA%94%E5%AF%B9%E8%B1%A1"><span class="toc-number">8.</span> <span class="toc-text">vo：响应对象</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%83%E6%98%AF%E5%B9%B2%E4%BB%80%E4%B9%88%E7%9A%84-6"><span class="toc-number">8.1.</span> <span class="toc-text">它是干什么的</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E4%B8%8D%E7%94%A8-entity-%E7%9B%B4%E6%8E%A5%E8%BF%94%E5%9B%9E"><span class="toc-number">8.2.</span> <span class="toc-text">为什么不用 entity 直接返回</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#vo-%E7%9A%84%E4%BD%9C%E7%94%A8"><span class="toc-number">8.3.</span> <span class="toc-text">vo 的作用</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%A4%BA%E4%BE%8B-1"><span class="toc-number">8.4.</span> <span class="toc-text">示例</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%80%E5%8F%A5%E8%AF%9D%E7%90%86%E8%A7%A3-4"><span class="toc-number">8.5.</span> <span class="toc-text">一句话理解</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#common%EF%BC%9A%E9%80%9A%E7%94%A8%E5%9F%BA%E7%A1%80%E8%83%BD%E5%8A%9B"><span class="toc-number">9.</span> <span class="toc-text">common：通用基础能力</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%83%E6%98%AF%E5%B9%B2%E4%BB%80%E4%B9%88%E7%9A%84-7"><span class="toc-number">9.1.</span> <span class="toc-text">它是干什么的</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%B8%B8%E8%A7%81%E5%86%85%E5%AE%B9"><span class="toc-number">9.2.</span> <span class="toc-text">常见内容</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E8%A6%81%E5%8D%95%E7%8B%AC%E6%94%BE"><span class="toc-number">9.3.</span> <span class="toc-text">为什么要单独放</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%A4%BA%E4%BE%8B-2"><span class="toc-number">9.4.</span> <span class="toc-text">示例</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%80%E5%8F%A5%E8%AF%9D%E7%90%86%E8%A7%A3-5"><span class="toc-number">9.5.</span> <span class="toc-text">一句话理解</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#config%EF%BC%9A%E5%85%A8%E5%B1%80%E9%85%8D%E7%BD%AE%E7%B1%BB"><span class="toc-number">10.</span> <span class="toc-text">config：全局配置类</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%83%E6%98%AF%E5%B9%B2%E4%BB%80%E4%B9%88%E7%9A%84-8"><span class="toc-number">10.1.</span> <span class="toc-text">它是干什么的</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%B8%B8%E8%A7%81%E5%86%85%E5%AE%B9-1"><span class="toc-number">10.2.</span> <span class="toc-text">常见内容</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%BE%E4%BE%8B-1"><span class="toc-number">10.3.</span> <span class="toc-text">举例</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%80%E5%8F%A5%E8%AF%9D%E7%90%86%E8%A7%A3-6"><span class="toc-number">10.4.</span> <span class="toc-text">一句话理解</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#security%EF%BC%9A%E8%AE%A4%E8%AF%81%E6%8E%88%E6%9D%83%E7%9B%B8%E5%85%B3%E8%83%BD%E5%8A%9B"><span class="toc-number">11.</span> <span class="toc-text">security：认证授权相关能力</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%83%E6%98%AF%E5%B9%B2%E4%BB%80%E4%B9%88%E7%9A%84-9"><span class="toc-number">11.1.</span> <span class="toc-text">它是干什么的</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%B8%B8%E8%A7%81%E8%81%8C%E8%B4%A3"><span class="toc-number">11.2.</span> <span class="toc-text">常见职责</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%83%E5%92%8C-service-%E7%9A%84%E5%8C%BA%E5%88%AB"><span class="toc-number">11.3.</span> <span class="toc-text">它和 service 的区别</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%80%E5%8F%A5%E8%AF%9D%E7%90%86%E8%A7%A3-7"><span class="toc-number">11.4.</span> <span class="toc-text">一句话理解</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#exception%EF%BC%9A%E5%BC%82%E5%B8%B8%E4%BD%93%E7%B3%BB"><span class="toc-number">12.</span> <span class="toc-text">exception：异常体系</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%83%E6%98%AF%E5%B9%B2%E4%BB%80%E4%B9%88%E7%9A%84-10"><span class="toc-number">12.1.</span> <span class="toc-text">它是干什么的</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%B8%B8%E8%A7%81%E5%86%85%E5%AE%B9-2"><span class="toc-number">12.2.</span> <span class="toc-text">常见内容</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E8%A6%81%E7%BB%9F%E4%B8%80%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86"><span class="toc-number">12.3.</span> <span class="toc-text">为什么要统一异常处理</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%85%B8%E5%9E%8B%E8%AE%BE%E8%AE%A1"><span class="toc-number">12.4.</span> <span class="toc-text">典型设计</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%80%E5%8F%A5%E8%AF%9D%E7%90%86%E8%A7%A3-8"><span class="toc-number">12.5.</span> <span class="toc-text">一句话理解</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#enums%EF%BC%9A%E6%9E%9A%E4%B8%BE%E7%B1%BB"><span class="toc-number">13.</span> <span class="toc-text">enums：枚举类</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%83%E6%98%AF%E5%B9%B2%E4%BB%80%E4%B9%88%E7%9A%84-11"><span class="toc-number">13.1.</span> <span class="toc-text">它是干什么的</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%B8%B8%E8%A7%81%E5%9C%BA%E6%99%AF"><span class="toc-number">13.2.</span> <span class="toc-text">常见场景</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E4%B8%8D%E7%94%A8%E9%AD%94%E6%B3%95%E5%80%BC"><span class="toc-number">13.3.</span> <span class="toc-text">为什么不用魔法值</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%80%E5%8F%A5%E8%AF%9D%E7%90%86%E8%A7%A3-9"><span class="toc-number">13.4.</span> <span class="toc-text">一句话理解</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#utils%EF%BC%9A%E5%B7%A5%E5%85%B7%E7%B1%BB"><span class="toc-number">14.</span> <span class="toc-text">utils：工具类</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%83%E6%98%AF%E5%B9%B2%E4%BB%80%E4%B9%88%E7%9A%84-12"><span class="toc-number">14.1.</span> <span class="toc-text">它是干什么的</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%B8%B8%E8%A7%81%E5%B7%A5%E5%85%B7%E7%B1%BB"><span class="toc-number">14.2.</span> <span class="toc-text">常见工具类</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%B3%A8%E6%84%8F%E4%BA%8B%E9%A1%B9"><span class="toc-number">14.3.</span> <span class="toc-text">注意事项</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%80%E5%8F%A5%E8%AF%9D%E7%90%86%E8%A7%A3-10"><span class="toc-number">14.4.</span> <span class="toc-text">一句话理解</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#dto%E3%80%81entity%E3%80%81vo-%E7%9A%84%E5%8C%BA%E5%88%AB"><span class="toc-number">15.</span> <span class="toc-text">dto、entity、vo 的区别</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#dto-%E6%8E%A5%E6%94%B6%E8%AF%B7%E6%B1%82%E7%94%A8"><span class="toc-number">15.1.</span> <span class="toc-text">dto:接收请求用</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#entity-%E6%98%A0%E5%B0%84%E6%95%B0%E6%8D%AE%E5%BA%93%E7%94%A8"><span class="toc-number">15.2.</span> <span class="toc-text">entity:映射数据库用</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#vo-%E8%BF%94%E5%9B%9E%E5%89%8D%E7%AB%AF%E7%94%A8"><span class="toc-number">15.3.</span> <span class="toc-text">vo:返回前端用</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%BE%E4%B8%AA%E5%AE%8C%E6%95%B4%E4%BE%8B%E5%AD%90%EF%BC%9A%E7%94%A8%E6%88%B7%E6%B3%A8%E5%86%8C%E5%90%8E%E6%9F%A5%E8%AF%A2%E7%94%A8%E6%88%B7%E4%BF%A1%E6%81%AF"><span class="toc-number">15.4.</span> <span class="toc-text">举个完整例子：用户注册后查询用户信息</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E8%BF%99%E7%A7%8D%E6%9E%B6%E6%9E%84%E5%BE%88%E5%B8%B8%E8%A7%81"><span class="toc-number">16.</span> <span class="toc-text">为什么这种架构很常见</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%81%8C%E8%B4%A3%E6%B8%85%E6%99%B0"><span class="toc-number">16.1.</span> <span class="toc-text">职责清晰</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%98%93%E7%BB%B4%E6%8A%A4"><span class="toc-number">16.2.</span> <span class="toc-text">易维护</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%98%93%E6%B5%8B%E8%AF%95"><span class="toc-number">16.3.</span> <span class="toc-text">易测试</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%98%93%E6%89%A9%E5%B1%95"><span class="toc-number">16.4.</span> <span class="toc-text">易扩展</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9B%A2%E9%98%9F%E5%8D%8F%E4%BD%9C%E5%8F%8B%E5%A5%BD"><span class="toc-number">16.5.</span> <span class="toc-text">团队协作友好</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BD%A0%E5%8F%AF%E4%BB%A5%E6%8A%8A%E5%AE%83%E8%AE%B0%E6%88%90%E4%B8%80%E5%8F%A5%E8%AF%9D"><span class="toc-number">17.</span> <span class="toc-text">你可以把它记成一句话</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%AF%B7%E6%B1%82%E6%B5%81%E8%BD%AC"><span class="toc-number">17.1.</span> <span class="toc-text">请求流转</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AF%B9%E8%B1%A1%E8%81%8C%E8%B4%A3"><span class="toc-number">17.2.</span> <span class="toc-text">对象职责</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9F%BA%E7%A1%80%E6%94%AF%E6%92%91"><span class="toc-number">17.3.</span> <span class="toc-text">基础支撑</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AE%9E%E9%99%85%E5%BC%80%E5%8F%91%E4%B8%AD%E5%AE%B9%E6%98%93%E7%8A%AF%E7%9A%84%E9%94%99"><span class="toc-number">18.</span> <span class="toc-text">实际开发中容易犯的错</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#controller-%E5%86%99%E5%A4%AA%E9%87%8D"><span class="toc-number">18.1.</span> <span class="toc-text">controller 写太重</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#entity-%E7%9B%B4%E6%8E%A5%E5%BD%93%E8%BF%94%E5%9B%9E%E5%AF%B9%E8%B1%A1"><span class="toc-number">18.2.</span> <span class="toc-text">entity 直接当返回对象</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#utils-%E5%8F%98%E6%88%90%E2%80%9C%E4%B8%87%E8%83%BD%E5%9E%83%E5%9C%BE%E6%A1%B6%E2%80%9D"><span class="toc-number">18.3.</span> <span class="toc-text">utils 变成“万能垃圾桶”</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#mapper-%E5%86%99%E4%B8%9A%E5%8A%A1%E5%88%A4%E6%96%AD"><span class="toc-number">18.4.</span> <span class="toc-text">mapper 写业务判断</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#service-%E4%B8%8D%E5%88%86%E6%8E%A5%E5%8F%A3%E5%92%8C%E5%AE%9E%E7%8E%B0"><span class="toc-number">18.5.</span> <span class="toc-text">service 不分接口和实现</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%AE%80%E8%A6%81%E6%80%BB%E7%BB%93"><span class="toc-number">19.</span> <span class="toc-text">简要总结</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/04/10/Spring-%E5%88%86%E5%B1%82%E6%9E%B6%E6%9E%84%E8%A7%A3%E6%9E%90/" title="Spring 分层架构解析">Spring 分层架构解析</a><time datetime="2026-04-10T01:55:07.000Z" title="发表于 2026-04-10 09:55:07">2026-04-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/03/25/%E5%A6%82%E4%BD%95%E5%BC%80%E5%A7%8B%E4%BD%BF%E7%94%A8-GitHub-Copilot-CLI/" title="如何使用 GitHub Copilot CLI">如何使用 GitHub Copilot CLI</a><time datetime="2026-03-25T02:00:00.000Z" title="发表于 2026-03-25 10:00:00">2026-03-25</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/03/22/%E5%A5%BD%E7%94%A8%E5%B0%8F%E5%B7%A5%E5%85%B7%E6%8E%A8%E8%8D%90/" title="好用小工具推荐">好用小工具推荐</a><time datetime="2026-03-22T13:00:00.000Z" title="发表于 2026-03-22 21:00:00">2026-03-22</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/03/14/Vscode-Github-Copilot%E6%8E%A5%E5%85%A5MATLAB/" title="Vscode + Github Copilot接入MATLAB">Vscode + Github Copilot接入MATLAB</a><time datetime="2026-03-14T07:50:36.000Z" title="发表于 2026-03-14 15:50:36">2026-03-14</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/03/13/vscode%E4%B8%AD%E6%89%93%E6%B1%89%E5%AD%97%E6%8B%BC%E9%9F%B3%E5%8F%AA%E5%87%BA%E7%8E%B0%E4%B8%8B%E5%88%92%E7%BA%BF%E4%B8%8D%E5%87%BA%E7%8E%B0%E6%96%87%E5%AD%97/" title="vscode中打汉字拼音只出现下划线不出现文字">vscode中打汉字拼音只出现下划线不出现文字</a><time datetime="2026-03-13T15:19:33.000Z" title="发表于 2026-03-13 23:19:33">2026-03-13</time></div></div></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2025 - 2026 By dddddzc</span><span class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 8.1.1</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.5.4</a></span></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="前往评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.5.4"></script><script src="/js/main.js?v=5.5.4"></script><div class="js-pjax"><script>(() => {
+  const isShuoshuo = GLOBAL_CONFIG_SITE.pageType === 'shuoshuo'
+  const option = null
+
+  const getGiscusTheme = theme => theme === 'dark' ? 'dark' : 'light'
+
+  const createScriptElement = config => {
+    const ele = document.createElement('script')
+    Object.entries(config).forEach(([key, value]) => {
+      ele.setAttribute(key, value)
+    })
+    return ele
+  }
+
+  const loadGiscus = (el = document, key) => {
+    const mappingConfig = isShuoshuo
+      ? { 'data-mapping': 'specific', 'data-term': key }
+      : { 'data-mapping': (option && option['data-mapping']) || 'pathname' }
+
+    const giscusConfig = {
+      src: 'https://giscus.app/client.js',
+      'data-repo': 'dddddzc/dddddzc.github.io',
+      'data-repo-id': 'R_kgDORgI73g',
+      'data-category-id': 'DIC_kwDORgI73s4C3201',
+      'data-theme': getGiscusTheme(document.documentElement.getAttribute('data-theme')),
+      'data-reactions-enabled': '1',
+      crossorigin: 'anonymous',
+      async: true,
+      ...option,
+      ...mappingConfig
+    }
+
+    const scriptElement = createScriptElement(giscusConfig)
+
+    el.querySelector('#giscus-wrap').appendChild(scriptElement)
+
+    if (isShuoshuo) {
+      window.shuoshuoComment.destroyGiscus = () => {
+        if (el.children.length) {
+          el.innerHTML = ''
+          el.classList.add('no-comment')
+        }
+      }
+    }
+  }
+
+  const changeGiscusTheme = theme => {
+    const iframe = document.querySelector('#giscus-wrap iframe')
+    if (iframe) {
+      const message = {
+        giscus: {
+          setConfig: {
+            theme: getGiscusTheme(theme)
+          }
+        }
+      }
+      iframe.contentWindow.postMessage(message, 'https://giscus.app')
+    }
+  }
+
+  btf.addGlobalFn('themeChange', changeGiscusTheme, 'giscus')
+
+  if (isShuoshuo) {
+    'Giscus' === 'Giscus'
+      ? window.shuoshuoComment = { loadComment: loadGiscus }
+      : window.loadOtherComment = loadGiscus
+    return
+  }
+
+  if ('Giscus' === 'Giscus' || !false) {
+    if (false) btf.loadComment(document.getElementById('giscus-wrap'), loadGiscus)
+    else loadGiscus()
+  } else {
+    window.loadOtherComment = loadGiscus
+  }
+})()</script></div><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>
